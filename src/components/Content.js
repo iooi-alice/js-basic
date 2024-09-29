@@ -6,10 +6,10 @@ export default function Content({ $app, initialData }) {
   $app.appendChild(this.$content);
 
   this.template = () => {
-    let temp = [];
+    let temp = ``;
     if (this.state) {
       this.state.forEach((photo) => {
-        temp += `<img src="${photo.url}">`;
+        temp += `<img src="${photo.url}" alt="${photo} image">`;
       });
     }
 
