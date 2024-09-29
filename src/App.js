@@ -3,40 +3,51 @@ import Content from './components/Content.js';
 import { request } from './components/api.js';
 
 export default function App($app) {
+  // State
   this.state = {
-    currentTab: 'all',
+    currentTab: window.location.pathname.replace('/', '') || 'all',
     photos: [],
   };
 
+  // Tab Component
   const tabBar = new TabBar({
     $app,
     initialState: this.state.currentTab,
     onClick: async (name) => {
-      this.setState({
-        ...this.state,
-        currentTab: name,
-        photos: await request(name === 'all' ? '' : name),
-      });
+      history.pushState(null, null, `/${name}`);
+      this.updateContent(name);
     },
   });
+
+  // Content Component
   const content = new Content({ $app, initialData: this.state.photos });
 
+  // setState
   this.setState = (newState) => {
     this.state = newState;
     tabBar.setState(this.state.currentTab);
     content.setState(this.state.photos);
   };
 
+  // update
+  this.updateContent = async (tabName) => {
+    const name = tabName === 'all' ? '' : tabName;
+    const photos = await request(name);
+
+    this.setState({
+      ...this.state,
+      currentTab: tabName,
+      photos: photos,
+    });
+  };
+
+  window.addEventListener('popstate', () => {
+    const tabName = window.location.pathname.replace('/', '') || 'all';
+    this.updateContent(tabName);
+  });
+
   const init = async () => {
-    try {
-      const initialData = await request();
-      this.setState({
-        ...this.state,
-        photos: initialData,
-      });
-    } catch (error) {
-      console.error(error);
-    }
+    this.updateContent(this.state.currentTab);
   };
 
   init();
